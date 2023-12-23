@@ -1,4 +1,4 @@
-package br.com.alura.aluvery.ui.components
+package br.com.alura.aluvery.ui.components.tests
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image

@@ -1,10 +1,11 @@
 package br.com.alura.aluvery.extensions
 
-import android.icu.text.NumberFormat
 import java.math.BigDecimal
-import java.util.Locale
+import java.text.NumberFormat
+import java.util.*
 
-fun BigDecimal.toBrazilianReais(): String {
-    val numberFormat = NumberFormat.getCurrencyInstance(Locale("pt", "br"))
-    return numberFormat.format(this).toString()
+fun BigDecimal.toBrazilianCurrency(): String {
+    return NumberFormat
+        .getCurrencyInstance(Locale("pt", "br"))
+        .format(this)
 }
