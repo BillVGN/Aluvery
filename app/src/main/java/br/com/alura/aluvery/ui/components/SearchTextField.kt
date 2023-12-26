@@ -20,13 +20,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SearchTextField(
     searchText: String,
-    onSearchChanged: (String) -> Unit,
+    onSearchChange: (String) -> Unit,
     onClearButtonPressed: () -> Unit
 ) {
     OutlinedTextField(
         value = searchText,
         onValueChange = { newValue ->
-            onSearchChanged(newValue)
+            onSearchChange(newValue)
         },
         leadingIcon = {
             Icon(
