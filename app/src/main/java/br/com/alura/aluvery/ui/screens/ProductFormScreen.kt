@@ -3,6 +3,7 @@ package br.com.alura.aluvery.ui.screens
 import android.icu.text.DecimalFormatSymbols
 import android.webkit.URLUtil
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -49,16 +51,15 @@ class ProductFormScreenUiState(
     val name: String = "",
     val price: String = "",
     val description: String = "",
-) {
-    val isURLValid = url.isNotBlank() && URLUtil.isNetworkUrl(url)
-}
+    val isURLValid: Boolean = url.isNotBlank() && URLUtil.isNetworkUrl(url)
+)
 
 @Composable
 fun ProductFormScreen(onSaveProduct: (Product) -> Unit) {
-    var url: String by remember { mutableStateOf("") }
-    var name: String by remember { mutableStateOf("") }
-    var price: String by remember { mutableStateOf("") }
-    var description: String by remember { mutableStateOf("") }
+    var url: String by rememberSaveable { mutableStateOf("") }
+    var name: String by rememberSaveable { mutableStateOf("") }
+    var price: String by rememberSaveable { mutableStateOf("") }
+    var description: String by rememberSaveable { mutableStateOf("") }
 
     val decimalFormatter = DecimalFormatter(symbols = DecimalFormatSymbols(Locale("pt", "br")))
 
@@ -68,31 +69,35 @@ fun ProductFormScreen(onSaveProduct: (Product) -> Unit) {
         BigDecimal.ZERO
     }
 
-    val state = ProductFormScreenUiState(
-        url = url,
-        decimalFormatter = decimalFormatter,
-        onSaveClick = {
-            val product = Product(
-                image = url,
-                name = name,
-                price = priceToBigDecimal,
-                description = description
-            )
-            onSaveProduct(product)
-        },
-        onUrlValueChange = {
-            url = it
-        },
-        onNameValueChange = {
-            name = it
-        },
-        onPriceValueChange = {
-            price = decimalFormatter.cleanup(it)
-        },
-        onDescriptionValueChange = {
-            description = it
-        }
-    )
+    val state =
+        ProductFormScreenUiState(
+            url = url,
+            name = name,
+            price = price,
+            description = description,
+            decimalFormatter = decimalFormatter,
+            onSaveClick = {
+                val product = Product(
+                    image = url,
+                    name = name,
+                    price = priceToBigDecimal,
+                    description = description
+                )
+                onSaveProduct(product)
+            },
+            onUrlValueChange = {
+                url = it
+            },
+            onNameValueChange = {
+                name = it
+            },
+            onPriceValueChange = {
+                price = decimalFormatter.cleanup(it)
+            },
+            onDescriptionValueChange = {
+                description = it
+            }
+        )
 
     ProductFormScreen(state)
 }

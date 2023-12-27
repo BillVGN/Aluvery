@@ -1,6 +1,9 @@
 package br.com.alura.aluvery.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -9,9 +12,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import androidx.compose.ui.unit.Dp
@@ -30,12 +35,15 @@ import java.math.BigDecimal
 fun CardProductItem(
     product: Product,
     modifier: Modifier = Modifier,
-    elevation: Dp = 4.dp
+    elevation: Dp = 4.dp,
+    isExpanded: Boolean = false
 ) {
+    var expanded by rememberSaveable { mutableStateOf(isExpanded) }
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(150.dp),
+            .heightIn(150.dp)
+            .clickable { expanded = !expanded },
         elevation = CardDefaults.cardElevation(elevation)
     ) {
         Column {
@@ -62,11 +70,13 @@ fun CardProductItem(
                 )
             }
             product.description?.let {
-                Text(
-                    text = product.description,
-                    Modifier
-                        .padding(16.dp)
-                )
+                AnimatedVisibility(expanded) {
+                    Text(
+                        text = product.description,
+                        modifier = Modifier
+                            .padding(16.dp)
+                    )
+                }
             }
         }
     }
@@ -81,8 +91,8 @@ private fun CardProductItemPreview() {
                 product = Product(
                     name = "Teste",
                     price = BigDecimal("9.99"),
-                    
-                ),
+
+                    ),
             )
         }
     }
@@ -98,7 +108,8 @@ fun CardProductItemWithDescriptionPreview() {
                     name = "Teste",
                     price = BigDecimal("9.99"),
                     description = LoremIpsum(25).values.first()
-                    ),
+                ),
+                isExpanded = true
             )
         }
     }
