@@ -1,9 +1,6 @@
 package br.com.alura.aluvery.ui.screens
 
-import android.icu.text.DecimalFormatSymbols
-import android.webkit.URLUtil
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,11 +15,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,77 +27,32 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.alura.aluvery.R
-import br.com.alura.aluvery.model.Product
-import br.com.alura.aluvery.ui.components.DecimalInputField
-import br.com.alura.aluvery.utilities.DecimalFormatter
+import br.com.alura.aluvery.ui.states.ProductFormUiState
+import br.com.alura.aluvery.ui.viewmodels.ProductFormScreenViewModel
 import coil.compose.AsyncImage
-import java.math.BigDecimal
-import java.util.Locale
-
-class ProductFormScreenUiState(
-    val onSaveClick: () -> Unit = {},
-    val onUrlValueChange: (String) -> Unit = {},
-    val onNameValueChange: (String) -> Unit = {},
-    val onPriceValueChange: (String) -> Unit = {},
-    val onDescriptionValueChange: (String) -> Unit = {},
-    val decimalFormatter: DecimalFormatter = DecimalFormatter(DecimalFormatSymbols.getInstance()),
-    val url: String = "",
-    val name: String = "",
-    val price: String = "",
-    val description: String = "",
-    val isURLValid: Boolean = url.isNotBlank() && URLUtil.isNetworkUrl(url)
-)
 
 @Composable
-fun ProductFormScreen(onSaveProduct: (Product) -> Unit) {
-    var url: String by rememberSaveable { mutableStateOf("") }
-    var name: String by rememberSaveable { mutableStateOf("") }
-    var price: String by rememberSaveable { mutableStateOf("") }
-    var description: String by rememberSaveable { mutableStateOf("") }
+fun ProductFormScreen(
+    viewModel: ProductFormScreenViewModel,
+    onSaveProduct: () -> Unit
+) {
 
-    val decimalFormatter = DecimalFormatter(symbols = DecimalFormatSymbols(Locale("pt", "br")))
+    val state by viewModel.uiState.collectAsState()
 
-    val priceToBigDecimal = try {
-        BigDecimal(price)
-    } catch (e: NumberFormatException) {
-        BigDecimal.ZERO
-    }
-
-    val state =
-        ProductFormScreenUiState(
-            url = url,
-            name = name,
-            price = price,
-            description = description,
-            decimalFormatter = decimalFormatter,
-            onSaveClick = {
-                val product = Product(
-                    image = url,
-                    name = name,
-                    price = priceToBigDecimal,
-                    description = description
-                )
-                onSaveProduct(product)
-            },
-            onUrlValueChange = {
-                url = it
-            },
-            onNameValueChange = {
-                name = it
-            },
-            onPriceValueChange = {
-                price = decimalFormatter.cleanup(it)
-            },
-            onDescriptionValueChange = {
-                description = it
-            }
-        )
-
-    ProductFormScreen(state)
+    ProductFormScreen(
+        state,
+        onSaveClick = {
+            viewModel.save()
+            onSaveProduct()
+        }
+    )
 }
 
 @Composable
-fun ProductFormScreen(state: ProductFormScreenUiState = ProductFormScreenUiState()) {
+fun ProductFormScreen(
+    state: ProductFormUiState = ProductFormUiState(),
+    onSaveClick: () -> Unit
+) {
     Column(
         Modifier
             .fillMaxSize()
@@ -151,20 +100,20 @@ fun ProductFormScreen(state: ProductFormScreenUiState = ProductFormScreenUiState
             ),
             onValueChange = state.onNameValueChange
         )
-
-        DecimalInputField(
+        TextField(
             value = state.price,
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Decimal,
                 imeAction = ImeAction.Next
             ),
-            label = { Text(text = "Preço") },
+            label = {
+                Text(text = "Preço")
+            },
             prefix = {
                 Text(text = "R$ ")
             },
-            decimalFormatter = state.decimalFormatter,
-            onValueChanged = state.onPriceValueChange
+            onValueChange = state.onPriceValueChange
         )
         TextField(
             value = state.description,
@@ -179,7 +128,7 @@ fun ProductFormScreen(state: ProductFormScreenUiState = ProductFormScreenUiState
             onValueChange = state.onDescriptionValueChange
         )
         Button(
-            onClick = state.onSaveClick,
+            onClick = onSaveClick,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(15)
         ) {
@@ -187,10 +136,4 @@ fun ProductFormScreen(state: ProductFormScreenUiState = ProductFormScreenUiState
         }
         Spacer(Modifier)
     }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun ProductFormScreenPreview() {
-    ProductFormScreen()
 }
